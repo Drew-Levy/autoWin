@@ -1,5 +1,5 @@
 import subprocess
-from ..Modules.utils import run_command
+from ..Modules.run_modules import run_command
 from .miscellaneous import drop_mimikatz
 
 def skeleton_mouse(skeleton_key: str, ip: str, user: str, password: str) -> None:

@@ -1,6 +1,7 @@
 from colored import Fore
 import subprocess
-from ..Modules.utils import run_command, add_users_to_file
+from ..Modules.utils import add_users_to_file
+from ..Modules.utils import run_command
 from typing import Optional
 
 def is_authenticated(user: str, password: str) -> None:

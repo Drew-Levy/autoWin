@@ -39,4 +39,5 @@ def parse_args():
     parser.add_argument("-name", "-n", help="GPO name")
     parser.add_argument("-ou", "-o", help="OU path to link GPO")
     parser.add_argument("-action", "-a", help="Action to perform for GPOHydra")
+    parser.add_argument("-wallpaper", "-w", help="Change the wallpaper on the target machine")
     return parser.parse_args()

