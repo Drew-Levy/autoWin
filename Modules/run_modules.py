@@ -41,6 +41,10 @@ def run_module_ldap(name: str, module: str, ip: str, user: str, password: str, a
     run_command(cmd)
     print()
 
+def get_output(result: subprocess.CompletedProcess) -> str:
+    """Extract combined stdout+stderr string from a CompletedProcess."""
+    return (result.stdout or "") + (result.stderr or "")
+
 def run_command(cmd: List[str], check: bool = False, print_output=True) -> subprocess.CompletedProcess:
     """Run a command, return CompletedProcess result"""
     try:

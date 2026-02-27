@@ -7,7 +7,7 @@ from typing import Optional
 def is_authenticated(user: str, password: str) -> None:
     return user and password
         
-def get_users(protocol: str, ip: str, user: Optional[str] = None, password: Optional[str] = None, output: Optional[bool] = False)-> None:
+def get_users(ip: str, user: Optional[str] = None, password: Optional[str] = None, output: Optional[bool]=True)-> None:
     if user and password:
         find_users = run_command(["nxc", "smb", ip, "-u", user, "-p", password, "--users"], False, output)  
     else:
@@ -23,14 +23,16 @@ def list_users(protocol: str, ip: str, user: Optional[str] = None, password: Opt
         find_users = run_command(["nxc", "smb", ip, "--users"], False)
     return find_users
 
-def default_scan(protocol: str, ip: str) -> None:
-    run_command(["nxc", protocol, ip])
+def default_scan(ip: str, protocol: Optional[str]) -> None:
+    run_command(["nxc", protocol, ip]) if protocol != "" else run_command(["nxc", "smb", ip])
 
-def get_password_pol(protocol: str, ip: str, user: Optional[str] = None, password: Optional[str] = None) -> None:
+def get_password_pol(ip: str, user: Optional[str] = None, password: Optional[str] = None,protocol: Optional[str] = "smb") -> None:
     if user and password:
         run_command(["nxc", "-u", user, "-p", "password", protocol, ip, "--pass-pol"])
+        print()
     else:
         run_command(["nxc", protocol, ip, "--pass-pol"])
+        print()
 
 def get_shares(protocol: str, ip: str, user: Optional[str] = None, password: Optional[str] = None) -> None:
     if user and password:

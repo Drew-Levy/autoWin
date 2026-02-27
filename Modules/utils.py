@@ -103,10 +103,13 @@ def load_wordlist(filepath: str, is_password: bool = False) -> List[str]:
     return items
 
 def add_users_to_file(output, user_file="users.txt"):
-    #rpc and nxc formats
     patterns = [r"User:\[([^\]]+)\]",r"SMB\s+\S+\s+\d+\s+\S+\s+([a-zA-Z0-9._-]+)\s{2,}"]
-
     blacklist = {"-Username-"}
+
+    if hasattr(output, 'stdout'):
+        output = (output.stdout or "") + (output.stderr or "")
+    if not isinstance(output, str):
+        output = str(output)
 
     existing_users = set()
     if Path(user_file).exists():

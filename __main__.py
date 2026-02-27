@@ -59,12 +59,18 @@ def main():
 
     if args.scan:
         if args.userscan:
-            get_users(protocol, ip, user, password) if is_authenticated(user, password) else get_users(protocol, ip)          
-        else:
-            default_scan(protocol, ip)
+            get_users(ip, user, password) if is_authenticated(user, password) else get_users(ip)
+            return       
+            
         if args.passwd:
-            get_password_pol(protocol, ip, user, password) if is_authenticated(user, password) else get_password_pol(protocol, ip)
+            if args.protocol:
+                get_password_pol(ip, user, password, protocol) if is_authenticated(user, password) else get_password_pol(protocol, ip)
+            else:
+                get_password_pol(ip, user, password) if is_authenticated(user, password) else get_password_pol(ip)
+            return
         
+        default_scan(ip, protocol)
+
     if args.shares:
         get_shares(protocol, ip, user, password) if is_authenticated(user, password) else get_shares(protocol, ip)
 
@@ -73,7 +79,7 @@ def main():
     
     
     if args.getusers:
-        get_users(protocol, ip, user, password) if is_authenticated(user, password) else get_users(protocol, ip)
+        get_users(ip, user, password) if is_authenticated(user, password) else get_users(ip)
         
     if args.bloodhound:
         bloodhound(ip, domain, user, password)
@@ -105,16 +111,16 @@ def main():
         exploit_adcs(domain, ip, user, password, target)
 
     if args.roast:
-        if not is_authenticated(user, password):
+        if args.user:
+            get_users(ip, user, password, no_output)
+            results = asrep_roast(ip, "users.txt")
+            kerberoasting(ip, user, password, results)
+            timeroasting(ip, user, password, results)
+        else:
             found_creds = asrep_roast(ip, args.user_list)
             if found_creds:
                 kerberoasting(ip, found_creds=found_creds)
                 timeroasting(ip, found_creds=found_creds)
-        else:
-            get_users(protocol, ip, user, password, no_output)
-            results = asrep_roast(ip, "users.txt")
-            kerberoasting(ip, user, password, results)
-            timeroasting(ip, user, password, results)
 
     if args.gpoabuse:
         gpoRevShell(args.gpoID, domain, user, password)
@@ -127,6 +133,6 @@ def main():
             spam_modules(ip, auth, user, password, extras, mssql)
     if args.wallpaper:
         update_wallpaper(user, password, ip, domain, args.wallpaper, auth)
-        
+    
 if __name__ == "__main__":
     main()
