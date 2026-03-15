@@ -71,8 +71,12 @@ def execute_powershell(target: str, username: str, password: str, domain: str, p
     try:
         result = run_command(cmd, False, False)
         output = result.stdout + result.stderr
-        success = result.returncode == 0
+
+        if '[-]' in output or 'STATUS_LOGON_FAILURE' in output or 'STATUS_ACCESS_DENIED' in output:
+            return False, output
+
+        success = '[+]' in output or 'SUCCEED' in output.upper()
         return success, output
-    
+
     except Exception as e:
-        return False, f"{Fore.red}[-] Error executing command: {str(e)}"
+        return False, f"{Fore.RED}[-] Error executing command: {str(e)}"

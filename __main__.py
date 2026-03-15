@@ -13,6 +13,7 @@ from .Exploits.ADCS import exploit_adcs
 from .Exploits.roasting import *
 from .Exploits.gpoabuse import gpoRevShell
 from .Exploits.auto import *
+from .Persistence.user_party import user_party
 import subprocess
 
 DEFAULT_USERS = ["Administrator", "guest", "admin"]
@@ -133,6 +134,10 @@ def main():
             spam_modules(ip, auth, user, password, extras, mssql)
     if args.wallpaper:
         update_wallpaper(user, password, ip, domain, args.wallpaper, auth)
+    
+    if args.party:
+        user_party(target, user, password, args.party, domain, auth)
+
     
 if __name__ == "__main__":
     main()
