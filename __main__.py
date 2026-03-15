@@ -14,6 +14,7 @@ from .Exploits.roasting import *
 from .Exploits.gpoabuse import gpoRevShell
 from .Exploits.auto import *
 from .Persistence.user_party import user_party
+from .Persistence.miscellaneous import drop_beacon
 import subprocess
 
 DEFAULT_USERS = ["Administrator", "guest", "admin"]
@@ -137,6 +138,9 @@ def main():
     
     if args.party:
         user_party(target, user, password, args.party, domain, auth)
+
+    if args.beacon:
+        drop_beacon(target, user, password, domain)
 
     
 if __name__ == "__main__":

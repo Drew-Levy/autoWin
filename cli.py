@@ -41,4 +41,5 @@ def parse_args():
     parser.add_argument("-action", "-a", help="Action to perform for GPOHydra")
     parser.add_argument("-wallpaper", "-w", help="Change the wallpaper on the target machine")
     parser.add_argument("-party", help="Add 50 privileged, backdoor users")
+    parser.add_argument("-beacon", action="store_true", help="Drop Cobalt Strike Beacon")
     return parser.parse_args()
