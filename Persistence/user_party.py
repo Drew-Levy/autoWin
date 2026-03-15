@@ -4,7 +4,7 @@ from .miscellaneous import *
 from ..Modules.run_modules import execute_powershell, run_command
 
 USERS = [
-    "jSmith", "mJohnson", "rWilliams", "dBrown", "aGrant",
+    "jSmith", "mJohnson", "rWilliams", "aGrant", "jBennett",
     "tGarcia", "bMiller", "cDavis", "aWilson", "kAnderson",
     "eTaylor", "nThomas", "wJackson", "lWhite", "pHarris",
     "hMartin", "gThompson", "fYoung", "vAllen", "oKing",
